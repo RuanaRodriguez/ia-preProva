@@ -8,3 +8,5 @@ Aplicação web que utiliza Flask e OpenAI GPT para ajudar estudantes a se acalm
 - **Flask**: Framework web para a interface e rotas
 - **OpenAI GPT**: Inteligência artificial para interação conversacional
 - **HTML/CSS/JavaScript**: Interface web moderna
+
+Sinta-se à vontade para sugerir melhorias, reportar bugs ou enviar novas ideias! ;)
