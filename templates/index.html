@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA de Apoio Pré-Prova</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 950px;
+            height: 88vh;
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '🧠';
+            font-size: 2em;
+            position: absolute;
+            top: 10px;
+            left: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.ai {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            padding: 15px 20px;
+            border-radius: 20px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.ai .message-content {
+            background: #e9ecef;
+            color: #333;
+            border: 1px solid #dee2e6;
+        }
+
+        .exercise-card {
+            background: #f0f8ff;
+            border: 2px solid #4facfe;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.2);
+        }
+
+        .exercise-title {
+            font-size: 1.3em;
+            color: #2c5aa0;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .exercise-instructions {
+            list-style: none;
+            padding: 0;
+        }
+
+        .exercise-instructions li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .exercise-instructions li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4facfe;
+            font-weight: bold;
+        }
+
+        .exercise-duration {
+            background: #4facfe;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .send-btn {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .typing-indicator {
+            display: none;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 10px;
+        }
+
+        .reset-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .phase-indicator {
+            position: absolute;
+            bottom: 10px;
+            right: 30px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                height: 98vh;
+                margin: 5px;
+                max-width: 100vw;
+                min-height: 0;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+            .message-content {
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="reset-btn" onclick="resetChat()">Nova Conversa</button>
+            <h1>Assistente de Preparação</h1>
+            <p>Vou te ajudar a se acalmar e se preparar para sua prova 😊</p>
+            <div class="phase-indicator" id="phase">Iniciando...</div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message ai">
+                    <div class="message-content">
+                        Olá! 👋 Sou sua assistente de preparação para provas. Estou aqui para te ajudar a se acalmar e se sentir mais confiante. Como você está se sentindo hoje sobre sua prova?
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typing">
+                A IA está pensando...
+            </div>
+            
+            <div class="input-container">
+                <input type="text" class="input-field" id="messageInput" 
+                       placeholder="Digite sua resposta aqui..." 
+                       onkeypress="handleKeyPress(event)">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isProcessing = false;
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isProcessing) {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+
+            isProcessing = true;
+            const sendBtn = document.getElementById('sendBtn');
+            const typing = document.getElementById('typing');
+            
+            // Desabilitar interface
+            input.disabled = true;
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Enviando...';
+            
+            // Adicionar mensagem do usuário
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Mostrar indicador de digitação
+            typing.style.display = 'block';
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    addMessage('Desculpe, ocorreu um erro. Tente novamente.', 'ai');
+                } else {
+                    addMessage(data.message, 'ai');
+                    
+                    // Adicionar exercício se fornecido
+                    if (data.exercise) {
+                        addExercise(data.exercise);
+                    }
+                    
+                    // Atualizar indicador de fase
+                    updatePhase(data.phase);
+                }
+                
+            } catch (error) {
+                addMessage('Erro de conexão. Verifique sua internet e tente novamente.', 'ai');
+            } finally {
+                // Reabilitar interface
+                typing.style.display = 'none';
+                input.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Enviar';
+                input.focus();
+                isProcessing = false;
+            }
+        }
+
+        function addMessage(content, type) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(contentDiv);
+            messages.appendChild(messageDiv);
+            
+            // Scroll para a última mensagem
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function addExercise(exercise) {
+            const messages = document.getElementById('messages');
+            const exerciseDiv = document.createElement('div');
+            exerciseDiv.className = 'message ai';
+            
+            const exerciseCard = document.createElement('div');
+            exerciseCard.className = 'exercise-card';
+            
+            const title = document.createElement('div');
+            title.className = 'exercise-title';
+            title.textContent = exercise.name;
+            
+            const instructions = document.createElement('ol');
+            instructions.className = 'exercise-instructions';
+            
+            exercise.instructions.forEach(instruction => {
+                const li = document.createElement('li');
+                li.textContent = instruction;
+                instructions.appendChild(li);
+            });
+            
+            const duration = document.createElement('div');
+            duration.className = 'exercise-duration';
+            duration.textContent = `Duração: ${exercise.duration}`;
+            
+            exerciseCard.appendChild(title);
+            exerciseCard.appendChild(instructions);
+            exerciseCard.appendChild(duration);
+            
+            exerciseDiv.appendChild(exerciseCard);
+            messages.appendChild(exerciseDiv);
+            
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function updatePhase(phase) {
+            const phaseIndicator = document.getElementById('phase');
+            const phaseNames = {
+                'initial': 'Avaliação Inicial',
+                'assessment': 'Analisando Estado',
+                'exercises': 'Exercícios de Relaxamento',
+                'final': 'Preparação Final'
+            };
+            
+            phaseIndicator.textContent = phaseNames[phase] || phase;
+        }
+
+        async function resetChat() {
+            if (confirm('Tem certeza que deseja iniciar uma nova conversa?')) {
+                try {
+                    await fetch('/reset');
+                    location.reload();
+                } catch (error) {
+                    console.error('Erro ao resetar:', error);
+                    location.reload();
+                }
+            }
+        }
+
+        // Focar no input ao carregar a página
+        window.onload = function() {
+            document.getElementById('messageInput').focus();
+        };
+    </script>
+</body>
+</html>

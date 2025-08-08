@@ -1,0 +1,35 @@
+.env
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Configurações do VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Virtualenv
+venv/
+.env/
+# Arquivos de ambiente e credenciais
+.env
+
+# Cache e arquivos temporários do Python
+__pycache__/
+*.pyc
+
+# Configurações do VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Diretórios de ambientes virtuais
+venv/
+.env/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
